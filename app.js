@@ -15,10 +15,19 @@ app.set('view engine', 'ejs')
 // ======================================================
 var campgroundSchema = new mongoose.Schema({
   name: String,
-  image: String
+  image: String,
+  description: String
 })
 
 var Campground = mongoose.model('Campground', campgroundSchema)
+// temp
+Campground.create({
+  name: 'Granite Hill',
+  image: 'https://p0.pikrepo.com/preview/170/362/rock-with-pine-trees-at-quincy-bluff-wisconsin-thumbnail.jpg',
+  description: 'An escape like none other. It\'s just you, granite and an open sky'
+}, (err, campground)=>{
+  err ? console.log(`error: ${err}`) : console.log(`Campground created: ${campground}`)
+})
 // ======================================================
 //                       Get Routes
 // ======================================================
@@ -26,6 +35,7 @@ app.get('/', (req, res)=>{
   res.render('landing')
 })
 
+// INDEX - show all campgrounds
 app.get('/campgrounds', (req, res)=>{
   // Get all campgrounds from DB
   Campground.find({}, (err, allCampgrounds)=>{
@@ -33,8 +43,15 @@ app.get('/campgrounds', (req, res)=>{
   })
 })
 
+// NEW - show form to create new campground
 app.get('/campgrounds/new', (req, res) => {
   res.render('new')
+})
+
+// SHOW - show info on specific campground (must come after NEW because of the catch all)
+app.get('/campgrounds/:id', (req, res) => {
+
+  res.send('THIS WILL BE THE SHOW PAGE ONE DAY')
 })
 
 app.get('*', (req, res)=>{
@@ -43,6 +60,7 @@ app.get('*', (req, res)=>{
 // ======================================================
 //                        Post Routes
 // ======================================================
+// CREATE - add new campground to DB
 app.post('/campgrounds', (req, res)=>{
   const name = req.body.name
   const image = req.body.image
