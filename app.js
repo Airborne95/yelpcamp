@@ -1,26 +1,24 @@
-const express = require('express')
-const app = express()
-const bodyParser = require('body-parser')
+const express    = require('express'),
+      app        = express(),
+      bodyParser = require('body-parser'),
+      mongoose   = require('mongoose')
+
+mongoose.connect('mongodb://localhost:27017/yelpcamp', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).catch((err)=>{ console.log(`Error with db: ${err}`)})
 
 app.use(bodyParser.urlencoded({extended: true}))
 app.set('view engine', 'ejs')
+// ======================================================
+//                     Schema Setup
+// ======================================================
+var campgroundSchema = new mongoose.Schema({
+  name: String,
+  image: String
+})
 
-// Temp
-var campgrounds = [
-  {name: 'Salmon Creek', image: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Reflected_Peaks_Cowichan_Lake.jpg'},
-  {name: 'Granite Hill', image: 'https://p0.pikist.com/photos/295/311/steppe-nature-grass-field-hill.jpg'},
-  {name: 'Mountain Goat Top', image: 'https://cdn.pixabay.com/photo/2017/03/14/17/43/mountain-2143877_960_720.jpg'},
-  {name: 'Salmon Creek', image: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Reflected_Peaks_Cowichan_Lake.jpg'},
-  {name: 'Granite Hill', image: 'https://p0.pikist.com/photos/295/311/steppe-nature-grass-field-hill.jpg'},
-  {name: 'Mountain Goat Top', image: 'https://cdn.pixabay.com/photo/2017/03/14/17/43/mountain-2143877_960_720.jpg'},
-  {name: 'Salmon Creek', image: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Reflected_Peaks_Cowichan_Lake.jpg'},
-  {name: 'Granite Hill', image: 'https://p0.pikist.com/photos/295/311/steppe-nature-grass-field-hill.jpg'},
-  {name: 'Mountain Goat Top', image: 'https://cdn.pixabay.com/photo/2017/03/14/17/43/mountain-2143877_960_720.jpg'},
-  {name: 'Salmon Creek', image: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Reflected_Peaks_Cowichan_Lake.jpg'},
-  {name: 'Granite Hill', image: 'https://p0.pikist.com/photos/295/311/steppe-nature-grass-field-hill.jpg'},
-  {name: 'Mountain Goat Top', image: 'https://cdn.pixabay.com/photo/2017/03/14/17/43/mountain-2143877_960_720.jpg'},
-]
-
+var Campground = mongoose.model('Campground', campgroundSchema)
 // ======================================================
 //                       Get Routes
 // ======================================================
@@ -29,7 +27,10 @@ app.get('/', (req, res)=>{
 })
 
 app.get('/campgrounds', (req, res)=>{
-   res.render('campgrounds', {campgrounds: campgrounds})
+  // Get all campgrounds from DB
+  Campground.find({}, (err, allCampgrounds)=>{
+    err ? console.log(`Error: ${err}`) : res.render('campgrounds', {campgrounds: allCampgrounds})
+  })
 })
 
 app.get('/campgrounds/new', (req, res) => {
@@ -39,19 +40,18 @@ app.get('/campgrounds/new', (req, res) => {
 app.get('*', (req, res)=>{
   res.send('Oops')
 })
-
 // ======================================================
 //                        Post Routes
 // ======================================================
-
 app.post('/campgrounds', (req, res)=>{
   const name = req.body.name
   const image = req.body.image
   const newCampground = {name: name, image: image}
-  campgrounds.push(newCampground)
-  res.redirect('campgrounds')
+  // Create a new campground and save to DB
+  Campground.create(newCampground, (err, campground)=>{
+    err ? console.log(`Error: ${err}`) : res.redirect('campgrounds')
+  })
 })
-
 // ======================================================
 //                        Start App
 // ======================================================
