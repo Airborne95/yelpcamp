@@ -3,6 +3,7 @@ const express    = require('express'),
       bodyParser = require('body-parser'),
       mongoose   = require('mongoose'),
       Campground = require('./models/campground'),
+      Comment = require('./models/comment'),
       seedDB     = require('./seeds')
 
 
@@ -25,19 +26,48 @@ app.get('/', (req, res)=>{
 app.get('/campgrounds', (req, res)=>{
   // Get all campgrounds from DB
   Campground.find({}, (err, allCampgrounds)=>{
-    err ? console.log(`Error: ${err}`) : res.render('index', {campgrounds: allCampgrounds})
+    err ? console.log(`Error: ${err}`) : res.render('campgrounds/index', {campgrounds: allCampgrounds})
   })
 })
 
 // NEW - show form to create new campground
 app.get('/campgrounds/new', (req, res) => {
-  res.render('new')
+  res.render('campgrounds/new')
 })
 
 // SHOW - shows more info about one campground
 app.get('/campgrounds/:id', (req, res) => {
   Campground.findById(req.params.id).populate('comments').exec( (err, foundCampground) => {
-    err ? console.log(`error: ${err}`) : res.render('show', {campground: foundCampground})
+    err ? console.log(`error: ${err}`) : res.render('campgrounds/show', {campground: foundCampground})
+  })
+})
+
+// ======================================================
+//                     Comments Routes
+// ======================================================
+
+app.get('/campgrounds/:id/comments/new', (req, res)=>{
+  Campground.findById(req.params.id, (err, campground) => {
+    err ? console.log(err) : res.render('comments/new', {campground: campground})
+  })
+})
+
+app.post('/campgrounds/:id/comments', (req, res)=>{
+  Campground.findById(req.params.id, (err, campground) => {
+    if(err){
+      console.log(err)
+      res.redirect('/campgrounds')
+    } else{
+      Comment.create(req.body.comment, (err, comment) => {
+        if(err){
+          console.log(err)
+        } else {
+          campground.comments.push(comment)
+          campground.save()
+          res.redirect(`/campgrounds/${campground._id}`)
+        }
+      })
+    }
   })
 })
 
