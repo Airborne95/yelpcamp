@@ -1,33 +1,19 @@
 const express    = require('express'),
       app        = express(),
       bodyParser = require('body-parser'),
-      mongoose   = require('mongoose')
+      mongoose   = require('mongoose'),
+      Campground = require('./models/campground'),
+      seedDB     = require('./seeds')
+
 
 mongoose.connect('mongodb://localhost:27017/yelpcamp', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).catch((err)=>{ console.log(`Error with db: ${err}`)})
 
+seedDB() // TODO see if needed
 app.use(bodyParser.urlencoded({extended: true}))
 app.set('view engine', 'ejs')
-// ======================================================
-//                     Schema Setup
-// ======================================================
-var campgroundSchema = new mongoose.Schema({
-  name: String,
-  image: String,
-  description: String
-})
-
-var Campground = mongoose.model('Campground', campgroundSchema)
-// temp
-// Campground.create({
-//   name: 'Granite Hill',
-//   image: 'https://p0.pikrepo.com/preview/170/362/rock-with-pine-trees-at-quincy-bluff-wisconsin-thumbnail.jpg',
-//   description: 'An escape like none other. It\'s just you, granite and an open sky'
-// }, (err, campground)=>{
-//   err ? console.log(`error: ${err}`) : console.log(`Campground created: ${campground}`)
-// })
 // ======================================================
 //                       Get Routes
 // ======================================================
@@ -50,7 +36,7 @@ app.get('/campgrounds/new', (req, res) => {
 
 // SHOW - shows more info about one campground
 app.get('/campgrounds/:id', (req, res) => {
-  Campground.findById(req.params.id, (err, foundCampground) => {
+  Campground.findById(req.params.id).populate('comments').exec( (err, foundCampground) => {
     err ? console.log(`error: ${err}`) : res.render('show', {campground: foundCampground})
   })
 })
