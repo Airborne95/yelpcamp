@@ -9,7 +9,6 @@ const express    = require('express'),
       User       = require('./models/user')
       seedDB     = require('./seeds')
 
-
 mongoose.connect('mongodb://localhost:27017/yelpcamp', {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -19,6 +18,20 @@ seedDB() // TODO see if needed
 app.use(bodyParser.urlencoded({extended: true}))
 app.set('view engine', 'ejs')
 app.use(express.static(`${__dirname}/public`))
+
+// Passport Configuration
+app.use(require('express-session')({
+  secret: 'but the coffee in peru is much hotter',
+  resave: false,
+  saveUninitialized: false
+}))
+
+app.use(passport.initialize())
+app.use(passport.session())
+passport.use(new LocalStrategy(User.authenticate()))
+passport.serializeUser(User.serializeUser())
+passport.deserializeUser(User.deserializeUser())
+
 // ======================================================
 //                       Get Routes
 // ======================================================
@@ -75,9 +88,6 @@ app.post('/campgrounds/:id/comments', (req, res)=>{
   })
 })
 
-app.get('*', (req, res)=>{
-  res.send('Oops')
-})
 // ======================================================
 //                        Post Routes
 // ======================================================
@@ -91,6 +101,34 @@ app.post('/campgrounds', (req, res)=>{
   Campground.create(newCampground, (err, campground)=>{
     err ? console.log(`Error: ${err}`) : res.redirect('campgrounds')
   })
+})
+
+// ======================================================
+//                      Auth Routes
+// ======================================================
+// show register form
+app.get('/register', (req, res)=>{
+  res.render('register')
+})
+
+// handle sign up logic
+app.post('/register', (req, res)=>{
+  const newUser = new User({username: req.body.username})
+  User.register(newUser, req.body.password, (err, user)=>{
+    if(err){
+      console.log(err)
+      return res.render('register')
+    }
+    passport.authenticate('local')(req, res, ()=>{
+      res.redirect('/campgrounds')
+    })
+  })
+})
+
+
+// Catch all
+app.get('*', (req, res)=>{
+  res.send('Oops')
 })
 // ======================================================
 //                        Start App
