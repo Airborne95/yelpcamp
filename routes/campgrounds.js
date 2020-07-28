@@ -54,6 +54,13 @@ router.put('/:id', (req, res) => {
   // redirect somewhere (show page)
 })
 
+// DESTROY CAMPGROUND ROUTE
+router.delete('/:id', (req, res)=>{
+  Campground.findByIdAndRemove(req.params.id, (err)=>{
+    err ? res.redirect('/campgrounds') : res.redirect('/campgrounds')
+  })
+})
+
 // middleware
 function isLoggedIn(req, res, next){
   if(req.isAuthenticated()){
