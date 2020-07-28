@@ -63,13 +63,13 @@ app.get('/campgrounds/:id', (req, res) => {
 //                     Comments Routes
 // ======================================================
 
-app.get('/campgrounds/:id/comments/new', (req, res)=>{
+app.get('/campgrounds/:id/comments/new', isLoggedIn, (req, res)=>{
   Campground.findById(req.params.id, (err, campground) => {
     err ? console.log(err) : res.render('comments/new', {campground: campground})
   })
 })
 
-app.post('/campgrounds/:id/comments', (req, res)=>{
+app.post('/campgrounds/:id/comments', isLoggedIn,(req, res)=>{
   Campground.findById(req.params.id, (err, campground) => {
     if(err){
       console.log(err)
@@ -136,10 +136,23 @@ app.post('/login', passport.authenticate('local',{
 }),(req, res)=>{
 })
 
+// logout route
+app.get('/logout', (req, res)=>{
+  req.logout()
+  res.redirect('/campgrounds')
+})
+
 // Catch all
 app.get('*', (req, res)=>{
   res.send('Oops')
 })
+
+function isLoggedIn(req, res, next){
+  if(req.isAuthenticated()){
+    return next()
+  }
+  res.redirect('/login')
+}
 // ======================================================
 //                        Start App
 // ======================================================
