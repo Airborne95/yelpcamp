@@ -4,7 +4,6 @@ const express = require('express'),
 
 // INDEX - show all campgrounds
 router.get('/', (req, res)=>{
-  console.log(req.user)
   // Get all campgrounds from DB
   Campground.find({}, (err, allCampgrounds)=>{
     err ? console.log(`Error: ${err}`) : res.render('campgrounds/index', {campgrounds: allCampgrounds})

@@ -19,7 +19,7 @@ mongoose.connect('mongodb://localhost:27017/yelpcamp', {
   useUnifiedTopology: true
 }).catch((err)=>{ console.log(`Error with db: ${err}`)})
 
-seedDB() // TODO see if needed
+// seedDB() // seed the database
 app.use(bodyParser.urlencoded({extended: true}))
 app.set('view engine', 'ejs')
 app.use(express.static(`${__dirname}/public`))
