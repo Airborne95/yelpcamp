@@ -5,7 +5,6 @@ const express = require('express'),
 
 // comments new
 router.get('/new', isLoggedIn, (req, res)=>{
-  console.log(req.params.id)
   Campground.findById(req.params.id, (err, campground) => {
     err ? console.log(err) : res.render('comments/new', {campground: campground})
   })
@@ -35,6 +34,25 @@ router.post('/', isLoggedIn,(req, res)=>{
       })
     }
   })
+})
+
+router.get('/:comment_id/edit', async (req,res)=>{
+  try {
+    const comment = await Comment.findById(req.params.comment_id)
+    res.render('comments/edit', {campground_id: req.params.id, comment: comment})
+  } catch (err) {
+    res.redirect('back')
+  }
+
+})
+
+router.put('/:comment_id', async (req, res)=>{
+  try{
+    await Comment.findByIdAndUpdate(req.params.comment_id,req.body.comment)
+    res.redirect(`/campgrounds/${req.params.id}`)
+  } catch (err) {
+    return res.redirect('back')
+  }
 })
 
 // middleware
