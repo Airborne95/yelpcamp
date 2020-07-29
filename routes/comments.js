@@ -36,7 +36,7 @@ router.post('/', isLoggedIn,(req, res)=>{
   })
 })
 
-router.get('/:comment_id/edit', async (req,res)=>{
+router.get('/:comment_id/edit', checkCommentOwnership ,async (req,res)=>{
   try {
     const comment = await Comment.findById(req.params.comment_id)
     res.render('comments/edit', {campground_id: req.params.id, comment: comment})
@@ -46,7 +46,7 @@ router.get('/:comment_id/edit', async (req,res)=>{
 
 })
 
-router.put('/:comment_id', async (req, res)=>{
+router.put('/:comment_id', checkCommentOwnership, async (req, res)=>{
   try{
     await Comment.findByIdAndUpdate(req.params.comment_id,req.body.comment)
     res.redirect(`/campgrounds/${req.params.id}`)
@@ -55,7 +55,7 @@ router.put('/:comment_id', async (req, res)=>{
   }
 })
 
-router.delete('/:comment_id', (req, res)=>{
+router.delete('/:comment_id', checkCommentOwnership, (req, res)=>{
   Comment.findByIdAndRemove(req.params.comment_id, (err)=>{
     err ? res.redirect('back') : res.redirect(`/campgrounds/${req.params.id}`)
   })
@@ -67,6 +67,27 @@ function isLoggedIn(req, res, next){
     return next()
   }
   res.redirect('/login')
+}
+
+function checkCommentOwnership(req, res, next){
+
+  if(req.isAuthenticated()){
+    Comment.findById(req.params.comment_id, (err, foundComment)=>{
+      if(err){
+        res.redirect('back')
+      } else {
+        // does user own the comment?
+        if(foundComment.author.id.equals(req.user._id)){
+          next()
+        }else{
+          res.redirect('back')
+        }
+      }
+    })
+  } else {
+    // No user was signed in
+    res.redirect('back')
+  }
 }
 
 module.exports = router
