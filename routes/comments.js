@@ -1,17 +1,18 @@
 const express = require('express'),
       router  = express.Router({mergeParams: true}),
       Campground = require('../models/campground'),
-      Comment = require('../models/comment')
+      Comment = require('../models/comment'),
+      middleware = require('../middleware')
 
 // comments new
-router.get('/new', isLoggedIn, (req, res)=>{
+router.get('/new', middleware.isLoggedIn, (req, res)=>{
   Campground.findById(req.params.id, (err, campground) => {
     err ? console.log(err) : res.render('comments/new', {campground: campground})
   })
 })
 
 // comments create
-router.post('/', isLoggedIn,(req, res)=>{
+router.post('/', middleware.isLoggedIn,(req, res)=>{
   Campground.findById(req.params.id, (err, campground) => {
     if(err){
       console.log(err)
@@ -28,7 +29,6 @@ router.post('/', isLoggedIn,(req, res)=>{
           comment.save()
           campground.comments.push(comment)
           campground.save()
-          console.log(comment)
           res.redirect(`/campgrounds/${campground._id}`)
         }
       })
@@ -36,7 +36,7 @@ router.post('/', isLoggedIn,(req, res)=>{
   })
 })
 
-router.get('/:comment_id/edit', checkCommentOwnership ,async (req,res)=>{
+router.get('/:comment_id/edit', middleware.checkCommentOwnership ,async (req,res)=>{
   try {
     const comment = await Comment.findById(req.params.comment_id)
     res.render('comments/edit', {campground_id: req.params.id, comment: comment})
@@ -46,7 +46,7 @@ router.get('/:comment_id/edit', checkCommentOwnership ,async (req,res)=>{
 
 })
 
-router.put('/:comment_id', checkCommentOwnership, async (req, res)=>{
+router.put('/:comment_id', middleware.checkCommentOwnership, async (req, res)=>{
   try{
     await Comment.findByIdAndUpdate(req.params.comment_id,req.body.comment)
     res.redirect(`/campgrounds/${req.params.id}`)
@@ -55,39 +55,10 @@ router.put('/:comment_id', checkCommentOwnership, async (req, res)=>{
   }
 })
 
-router.delete('/:comment_id', checkCommentOwnership, (req, res)=>{
+router.delete('/:comment_id', middleware.checkCommentOwnership, (req, res)=>{
   Comment.findByIdAndRemove(req.params.comment_id, (err)=>{
     err ? res.redirect('back') : res.redirect(`/campgrounds/${req.params.id}`)
   })
 })
-
-// middleware
-function isLoggedIn(req, res, next){
-  if(req.isAuthenticated()){
-    return next()
-  }
-  res.redirect('/login')
-}
-
-function checkCommentOwnership(req, res, next){
-
-  if(req.isAuthenticated()){
-    Comment.findById(req.params.comment_id, (err, foundComment)=>{
-      if(err){
-        res.redirect('back')
-      } else {
-        // does user own the comment?
-        if(foundComment.author.id.equals(req.user._id)){
-          next()
-        }else{
-          res.redirect('back')
-        }
-      }
-    })
-  } else {
-    // No user was signed in
-    res.redirect('back')
-  }
-}
 
 module.exports = router
