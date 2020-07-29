@@ -6,16 +6,16 @@ const middlewareObj = {}
 middlewareObj.checkCampgroundOwnership = (req, res, next) => {
   if(req.isAuthenticated()){
     Campground.findById(req.params.id, (err, foundCampground)=>{
-      if(err){
+      if(err || !foundCampground){
         req.flash('error', 'Campground not found')
         res.redirect('back')
       } else {
-        if(foundCampground.author.id.equals(req.user._id)){
-          next()
-        }else{
-          req.flash('error', 'You don\'t have permission to do that')
-          res.redirect('back')
-        }
+          if(foundCampground.author.id.equals(req.user._id)){
+            next()
+          } else{
+            req.flash('error', 'You don\'t have permission to do that')
+            res.redirect('back')
+          }
       }
     })
   } else {
@@ -27,7 +27,7 @@ middlewareObj.checkCampgroundOwnership = (req, res, next) => {
 middlewareObj.checkCommentOwnership =  (req, res, next) => {
   if(req.isAuthenticated()){
     Comment.findById(req.params.comment_id, (err, foundComment)=>{
-      if(err){
+      if(err || !foundComment){
         req.flash('error', 'Comment not found')
         res.redirect('back')
       } else {
