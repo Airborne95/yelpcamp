@@ -2,6 +2,7 @@ const express    = require('express'),
       app        = express(),
       bodyParser = require('body-parser'),
       mongoose   = require('mongoose'),
+      flash      = require('connect-flash'),
       passport   = require('passport'),
       LocalStrategy = require('passport-local'),
       methodOverride = require('method-override'),
@@ -21,6 +22,7 @@ mongoose.connect('mongodb://localhost:27017/yelpcamp', {
 }).catch((err)=>{ console.log(`Error with db: ${err}`)})
 
 // seedDB() // seed the database
+app.use(flash())
 app.use(bodyParser.urlencoded({extended: true}))
 app.set('view engine', 'ejs')
 app.use(express.static(`${__dirname}/public`))
