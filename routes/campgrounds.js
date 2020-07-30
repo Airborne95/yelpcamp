@@ -1,6 +1,7 @@
 const express = require('express'),
       router  = express.Router({mergeParams: true}),
       Campground = require('../models/campground'),
+      Comment   = require('../models/comment')
       middleware = require('../middleware')
 
 // INDEX - show all campgrounds
@@ -65,9 +66,13 @@ router.put('/:id', middleware.checkCampgroundOwnership, (req, res) => {
 })
 
 // DESTROY CAMPGROUND ROUTE
-router.delete('/:id', middleware.checkCampgroundOwnership, (req, res)=>{
-  Campground.findByIdAndRemove(req.params.id, (err)=>{
-    err ? res.redirect('/campgrounds') : res.redirect('/campgrounds')
+router.delete('/:id', middleware.checkCampgroundOwnership, (req, res, next)=>{
+  Campground.findById(req.params.id, (err, campground)=>{
+    if(err) return next(err)
+
+    campground.remove()
+    req.flash('success', 'Campground delete succesfully')
+    res.redirect('/campgrounds')
   })
 })
 
