@@ -4,14 +4,14 @@ const express = require('express'),
       Comment = require('../models/comment'),
       middleware = require('../middleware')
 
-// comments new
+// COMMENT NEW
 router.get('/new', middleware.isLoggedIn, (req, res)=>{
   Campground.findById(req.params.id, (err, campground) => {
     err ? console.log(err) : res.render('comments/new', {campground: campground})
   })
 })
 
-// comments create
+/// COMMENT CREATE
 router.post('/', middleware.isLoggedIn,(req, res)=>{
   Campground.findById(req.params.id, (err, campground) => {
     if(err){
@@ -38,16 +38,35 @@ router.post('/', middleware.isLoggedIn,(req, res)=>{
   })
 })
 
+// COMMENT EDIT
 router.get('/:comment_id/edit', middleware.checkCommentOwnership ,async (req,res)=>{
-  try {
-    const comment = await Comment.findById(req.params.comment_id)
-    res.render('comments/edit', {campground_id: req.params.id, comment: comment})
-  } catch (err) {
-    res.redirect('back')
-  }
+  Campground.findById(req.params.id, (err, foundCampground)=>{
+    if(err || !foundCampground){
+      req.flash('error', 'No campground found')
+      return res.redirect('back')
+    }
+    Comment.findById(req.params.comment_id, (err, foundComment) => {
+      if(err || !foundComment){
+        return res.redirect('back')
+      }
+      res.render('comments/edit', {campground_id: req.params.id, comment: foundComment})
+    })
+
+  })
+  // My attempt at using async instead
+  // try {
+  //   const campground = await Campground.findById(req.params.id)
+  //   const comment = await Comment.findById(req.params.comment_id)
+  //   res.render('comments/edit', {campground_id: campground._id, comment: comment})
+  // } catch (err) {
+  //   req.flash('error', err.message)
+  //   console.log(err)
+  //   res.redirect('back')
+  // }
 
 })
 
+// COMMENT UPDATE
 router.put('/:comment_id', middleware.checkCommentOwnership, async (req, res)=>{
   try{
     await Comment.findByIdAndUpdate(req.params.comment_id,req.body.comment)
