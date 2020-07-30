@@ -37,7 +37,13 @@ router.get('/new',middleware.isLoggedIn, (req, res) => {
 // SHOW - shows more info about one campground
 router.get('/:id', (req, res) => {
   Campground.findById(req.params.id).populate('comments').exec( (err, foundCampground) => {
-    err ? console.log(`error: ${err}`) : res.render('campgrounds/show', {campground: foundCampground})
+    if(err || !foundCampground){
+      console.log(`error: ${err}`)
+      req.flash('error', 'Campground not found')
+      res.redirect('back')
+    } else {
+      res.render('campgrounds/show', {campground: foundCampground})
+    }
   })
 })
 
