@@ -10,6 +10,15 @@
   display: inline;
 }
 
+.header {
+  text-align: center;
+}
+
+.form-body {
+  width: 30%;
+  margin: 25px auto;
+}
+
 /* .thumbnail .caption-full{
   padding: 9px;
 } */
