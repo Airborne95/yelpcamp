@@ -19,6 +19,11 @@
   margin: 25px auto;
 }
 
+#map{
+  height: 400px;
+  width: 100%;
+}
+
 /* .thumbnail .caption-full{
   padding: 9px;
 } */
