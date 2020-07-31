@@ -24,6 +24,10 @@
   width: 100%;
 }
 
+#comment-edit {
+  margin-right: 0.5vh;
+}
+
 /* .thumbnail .caption-full{
   padding: 9px;
 } */
