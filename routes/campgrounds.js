@@ -8,7 +8,7 @@ const express = require('express'),
 router.get('/', (req, res)=>{
   // Get all campgrounds from DB
   Campground.find({}, (err, allCampgrounds)=>{
-    err ? console.log(`Error: ${err}`) : res.render('campgrounds/index', {campgrounds: allCampgrounds})
+    err ? console.log(`Error: ${err}`) : res.render('campgrounds/index', { campgrounds: allCampgrounds, page: 'campgrounds' })
   })
 })
 
