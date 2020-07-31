@@ -28,8 +28,6 @@ const campgroundSchema = new mongoose.Schema({
 // gets invoked before a .remove gets run
 // cannot use arrow syntax or it wont work..
 campgroundSchema.pre('remove', async function (next) {
-  console.log('Pre hook fired')
-  console.log(this)
   try {
     await Comment.remove({
       '_id': {

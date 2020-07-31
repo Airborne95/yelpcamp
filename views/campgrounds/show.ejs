@@ -19,7 +19,7 @@
         <p>
           <em>Submitted by: <%= campground.author.username %>, <%= moment(campground.createdAt).fromNow() %></em>
         </p>
-        <% if(currentUser && campground.author.id.equals(currentUser._id)){ %>
+        <% if(currentUser && (campground.author.id.equals(currentUser._id) || currentUser.isAdmin)){ %>
           <a class='btn btn-xs btn-warning' href="/campgrounds/<%= campground._id%>/edit">Edit</a>
           <form class='delete-form' action="/campgrounds/<%= campground._id %>?_method=DELETE" method="POST">
             <button class='btn btn-xs btn-danger'>Delete</button>
@@ -41,7 +41,7 @@
             <p>
               <%= comment.text %>
             </p>
-            <% if(currentUser && comment.author.id.equals(currentUser._id)){ %>
+            <% if(currentUser && (comment.author.id.equals(currentUser._id) || currentUser.isAdmin)){ %>
               <form class='delete-form' action="/campgrounds/<%= campground._id%>/comments/<%= comment.id%>?_method=DELETE" method='POST'>
                 <input type="submit" class='btn btn-xs btn-danger pull-right' value='Delete'>
               </form>
@@ -59,8 +59,8 @@
 </div>
 <script>
   function initMap() {
-    var lat = <%= campground.lat %>;
-    var lng = <%= campground.lng %>;
+    var lat = <%= campground.lat %>
+    var lng = <%= campground.lng %>
     var center = {lat: lat, lng: lng };
     var map = new google.maps.Map(document.getElementById('map'), {
         zoom: 8,

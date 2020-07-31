@@ -83,9 +83,6 @@ router.get('/:id/edit', middleware.checkCampgroundOwnership, (req, res)=> {
   })
 })
 
-// ===========================================================================
-// temp
-
 // UPDATE CAMPGROUND ROUTE
 router.put("/:id", middleware.checkCampgroundOwnership, function(req, res){
   geocoder.geocode(req.body.location, function (err, data) {
@@ -108,10 +105,6 @@ router.put("/:id", middleware.checkCampgroundOwnership, function(req, res){
     });
   });
 });
-
-// ===========================================================================
-
-
 
 // DESTROY CAMPGROUND ROUTE
 router.delete('/:id', middleware.checkCampgroundOwnership, (req, res, next)=>{
