@@ -1,7 +1,8 @@
 const express = require('express'),
       router  = express.Router(),
       passport = require('passport'),
-      User = require('../models/user')
+      User = require('../models/user'),
+      Campground = require('../models/campground')
 
 // root route
 router.get('/', (req, res)=>{
@@ -54,6 +55,24 @@ router.get('/logout', (req, res)=>{
   req.logout()
   req.flash('success', 'Logged you out!')
   res.redirect('/campgrounds')
+})
+
+// USER PROFILE
+router.get('/users/:id', (req, res)=>{
+  User.findById(req.params.id, (err, foundUser)=>{
+    if(err){
+      req.flash('err', 'Something went wrong.')
+      res.redirect('back')
+    }
+    Campground.find().where('author.id').equals(foundUser._id).exec((err, campgrounds) => {
+      if(err){
+        req.flash('err', 'Something went wrong.')
+        res.redirect('back')
+      }
+      res.render('users/show', { user: foundUser, campgrounds:campgrounds })
+    })
+
+  })
 })
 
 module.exports = router
