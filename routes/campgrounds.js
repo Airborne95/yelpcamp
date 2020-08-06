@@ -16,10 +16,26 @@ var geocoder = NodeGeocoder(options);
 
 // INDEX - show all campgrounds
 router.get('/', (req, res)=>{
-  // Get all campgrounds from DB
-  Campground.find({}, (err, allCampgrounds)=>{
-    err ? console.log(`Error: ${err}`) : res.render('campgrounds/index', { campgrounds: allCampgrounds, page: 'campgrounds' })
-  })
+  // eval(require('locus')) //DEBUG
+  var noMatch
+  if(req.query.search){
+    const regex = new RegExp(escapeRegex(req.query.search), 'gi')
+    Campground.find({name: regex}, (err, allCampgrounds)=>{
+      if(err){
+        console.log(`Error: ${err}`)
+      } else{
+        // (allCampgrounds.length < 1) && req.flash('error', 'No campgrounds match that search, please try again') //Buggy, shows up after 2 searches TODO fix
+        if (allCampgrounds.length < 1) { noMatch = 'No campgrounds match that search, please try again' }
+        res.render('campgrounds/index', { campgrounds: allCampgrounds, page: 'campgrounds', noMatch: noMatch })
+      }
+    })
+  } else {
+    // Get all campgrounds from DB
+    Campground.find({}, (err, allCampgrounds)=>{
+      err ? console.log(`Error: ${err}`) : res.render('campgrounds/index', { campgrounds: allCampgrounds, page: 'campgrounds', noMatch: noMatch })
+    })
+  }
+
 })
 
 // CREATE - add new campground to DB
@@ -116,5 +132,9 @@ router.delete('/:id', middleware.checkCampgroundOwnership, (req, res, next)=>{
     res.redirect('/campgrounds')
   })
 })
+
+function escapeRegex(text) {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+}
 
 module.exports = router
