@@ -1,60 +1,62 @@
-const express = require('express')
-const app = express()
-const bodyParser = require('body-parser')
+require('dotenv').config()
 
+const express    = require('express'),
+      app        = express(),
+      bodyParser = require('body-parser'),
+      mongoose   = require('mongoose'),
+      flash      = require('connect-flash'),
+      passport   = require('passport'),
+      LocalStrategy = require('passport-local'),
+      methodOverride = require('method-override'),
+      Campground = require('./models/campground'),
+      Comment    = require('./models/comment'),
+      User       = require('./models/user'),
+      seedDB     = require('./seeds')
+
+// requiring routes
+const commentRoutes     = require('./routes/comments'),
+      campgroundRoutes  = require('./routes/campgrounds'),
+      indexRoutes        = require('./routes/index')
+
+mongoose.connect('mongodb://localhost:27017/yelpcamp', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).catch((err)=>{ console.log(`Error with db: ${err}`)})
+
+// seedDB() // seed the database
+app.use(flash())
 app.use(bodyParser.urlencoded({extended: true}))
 app.set('view engine', 'ejs')
+app.use(express.static(`${__dirname}/public`))
+app.use(methodOverride('_method'))
+app.locals.moment = require('moment')
 
-// Temp
-var campgrounds = [
-  {name: 'Salmon Creek', image: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Reflected_Peaks_Cowichan_Lake.jpg'},
-  {name: 'Granite Hill', image: 'https://p0.pikist.com/photos/295/311/steppe-nature-grass-field-hill.jpg'},
-  {name: 'Mountain Goat Top', image: 'https://cdn.pixabay.com/photo/2017/03/14/17/43/mountain-2143877_960_720.jpg'},
-  {name: 'Salmon Creek', image: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Reflected_Peaks_Cowichan_Lake.jpg'},
-  {name: 'Granite Hill', image: 'https://p0.pikist.com/photos/295/311/steppe-nature-grass-field-hill.jpg'},
-  {name: 'Mountain Goat Top', image: 'https://cdn.pixabay.com/photo/2017/03/14/17/43/mountain-2143877_960_720.jpg'},
-  {name: 'Salmon Creek', image: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Reflected_Peaks_Cowichan_Lake.jpg'},
-  {name: 'Granite Hill', image: 'https://p0.pikist.com/photos/295/311/steppe-nature-grass-field-hill.jpg'},
-  {name: 'Mountain Goat Top', image: 'https://cdn.pixabay.com/photo/2017/03/14/17/43/mountain-2143877_960_720.jpg'},
-  {name: 'Salmon Creek', image: 'https://upload.wikimedia.org/wikipedia/commons/8/8f/Reflected_Peaks_Cowichan_Lake.jpg'},
-  {name: 'Granite Hill', image: 'https://p0.pikist.com/photos/295/311/steppe-nature-grass-field-hill.jpg'},
-  {name: 'Mountain Goat Top', image: 'https://cdn.pixabay.com/photo/2017/03/14/17/43/mountain-2143877_960_720.jpg'},
-]
+// Passport Configuration
+app.use(require('express-session')({
+  secret: 'but the coffee in peru is much hotter',
+  resave: false,
+  saveUninitialized: false
+}))
 
-// ======================================================
-//                       Get Routes
-// ======================================================
-app.get('/', (req, res)=>{
-  res.render('landing')
+app.use(passport.initialize())
+app.use(passport.session())
+passport.use(new LocalStrategy(User.authenticate()))
+passport.serializeUser(User.serializeUser())
+passport.deserializeUser(User.deserializeUser())
+
+// calls this function on every route
+app.use((req, res, next)=> {
+  res.locals.currentUser = req.user;
+  res.locals.error = req.flash('error')
+  res.locals.success = req.flash('success')
+  next()
 })
 
-app.get('/campgrounds', (req, res)=>{
-   res.render('campgrounds', {campgrounds: campgrounds})
-})
+app.use('/', indexRoutes)
+app.use('/campgrounds', campgroundRoutes)
+app.use('/campgrounds/:id/comments', commentRoutes)
 
-app.get('/campgrounds/new', (req, res) => {
-  res.render('new')
-})
-
-app.get('*', (req, res)=>{
-  res.send('Oops')
-})
-
-// ======================================================
-//                        Post Routes
-// ======================================================
-
-app.post('/campgrounds', (req, res)=>{
-  const name = req.body.name
-  const image = req.body.image
-  const newCampground = {name: name, image: image}
-  campgrounds.push(newCampground)
-  res.redirect('campgrounds')
-})
-
-// ======================================================
-//                        Start App
-// ======================================================
+// Start App
 app.listen(3000, ()=>{
   console.log('YelpCamp Server has started http://localhost:3000')
 })
