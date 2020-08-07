@@ -18,10 +18,14 @@ const commentRoutes     = require('./routes/comments'),
       campgroundRoutes  = require('./routes/campgrounds'),
       indexRoutes        = require('./routes/index')
 
-mongoose.connect('mongodb://localhost:27017/yelpcamp', {
+mongoose.connect(`mongodb+srv://arcdev:${process.env.MONGOPW}@cluster0.428kl.mongodb.net/yelpcamp?retryWrites=true&w=majority`, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).catch((err)=>{ console.log(`Error with db: ${err}`)})
+}).then(() => {
+  console.log('Connected to db')
+}).catch(err => {
+  console.log(`Error with db: ${err}`)
+})
 
 // seedDB() // seed the database
 app.use(flash())
