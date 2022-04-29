@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/Airborne95/yelpcamp#readme",
   "dependencies": {
-    "async": "^3.2.0",
+    "async": "^3.2.2",
     "body-parser": "^1.19.0",
     "connect-flash": "^0.1.1",
     "dotenv": "^8.2.0",
